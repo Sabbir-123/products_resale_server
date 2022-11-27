@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const jwt = require('jsonwebtoken')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
+const { query } = require('express')
 require('dotenv').config()
 
 const app = express()
@@ -39,6 +40,8 @@ async function run() {
     const mobileCollection = client.db("usedmobile").collection("allmobilebycategory");
 
     const bookingsCollection = client.db("usedmobile").collection("bookings");
+    const advertiseCollection = client.db("usedmobile").collection("advertise");
+    const wishlistCollection = client.db("usedmobile").collection("wishlist");
     const usersCollection = client.db("usedmobile").collection("users");
     const sellersCollection = client.db("usedmobile").collection("sellers");
     const paymentsCollection = client.db("usedmobile").collection("payments");
@@ -61,6 +64,9 @@ async function run() {
       const query = {};
       const cursor = await categoryCollection.find(query).toArray();
       const bookingQuery =  { bookingId : id }  ;
+      const email = req.query.email;
+      const queryByEmailForSeller = { email: email };
+      const bookings = await categoryCollection.find(queryByEmailForSeller).toArray();
       const alreadyBooked = await bookingsCollection.find(bookingQuery).toArray();
       cursor.forEach(cur=> {
         const curBooked = alreadyBooked.filter(book=> book.bookingId === cur.bookingId)
@@ -74,7 +80,74 @@ async function run() {
       const cursor = await categoryCollection.find(result).toArray();
       res.send(cursor)
     });
+    app.get("/addedbyseller", async (req, res) => {
+      const email = req.query.email;
+      const queryByEmailForSeller = { email: email };
+      const bookings = await categoryCollection.find(queryByEmailForSeller).toArray();
+      res.send(bookings)
+    });
 
+    app.post("/mobiles", verifyJWT,  async (req, res) => {
+      const mobiles = req.body;
+      const result = await categoryCollection.insertOne(mobiles);
+      res.send(result);
+    });
+    // Advertise
+    app.post("/advertise",  async (req, res) => {
+      const mobiles = req.body;
+      const id = mobiles._id;
+      console.log(mobiles)
+      const query = {
+        _id: ObjectId(id),
+        stock:  mobiles.stock,
+        email: mobiles.email }
+      const filter = { _id: ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          advertiesed: true,
+        }
+      }
+      const updateFilter =await advertiseCollection.updateOne(filter, updatedDoc)
+      const available = await advertiseCollection.find(query).toArray();
+      if (available.length) {
+        const message = `You already have a advertised for this item `;
+        return res.send({ acknowledged: false, message });
+      }
+      console.log(available)
+      const result = await advertiseCollection.insertOne(mobiles);
+      res.send(result);
+    });
+
+    app.get('/advertise', async(req, res)=>{
+      const query= {};
+      const mobile= await advertiseCollection.find(query).toArray();
+      res.send(mobile)
+
+    })
+
+    // Wishlist
+
+    app.post("/wishlist",  async (req, res) => {
+      const mobiles = req.body;
+      const query = {
+        stock:  mobiles.stock,
+        email: mobiles.email }
+      const available = await wishlistCollection.find(query).toArray();
+      if (available.length) {
+        const message = `You already have a advertised for this item `;
+        return res.send({ acknowledged: false, message });
+      }
+      console.log(available)
+      const result = await wishlistCollection.insertOne(mobiles);
+      res.send(result);
+    });
+
+    app.get('/wishlist', async(req, res)=>{
+      const query= {};
+      const mobile= await wishlistCollection.find(query).toArray();
+      res.send(mobile)
+
+    })
     // app.get("/mobilesbycategory", async (req, res) => {
     //   const query = {};
     //   const cursor = await mobileCollection.find(query).toArray();
