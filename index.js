@@ -267,6 +267,53 @@ async function run() {
       res.send(users)
 
     })
+
+    // Payments
+
+    app.post("/create-payment-intent", async (req, res) => {
+      const bookings = req.body;
+      const price = bookings.price;
+      const amount = price ;
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        currency: "usd",
+        amount: amount,
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    app.post("/payments", async (req, res) => {
+      const payments = req.body;
+      const result = await paymentsCollection.insertOne(payments);
+      const id = payments.bookingId;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paid: true,
+        },
+      };
+      const updatedResult = await bookingsCollection.updateOne(
+        filter,
+        updatedDoc
+      );
+      
+      res.send(result);
+    });
+
+    app.get('/payemtsuser', async(req, res)=>{
+      const user = req.body;
+      const query  ={
+        email : user?.email
+      };
+      const usersall = await paymentsCollection.findOne(query);
+      res.send(usersall)
+
+    })
+
    
   
   } finally {
