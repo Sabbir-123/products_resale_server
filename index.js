@@ -17,7 +17,7 @@ app.use(cors())
 app.use(express.json())
 
 // Database Connection
-const uri = "mongodb+srv://kenabacha:lAKsFvO61icXeVQe@cluster0.j4x9j8z.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}e@cluster0.j4x9j8z.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
@@ -153,12 +153,6 @@ async function run() {
     app.get("/wishlist", async (req, res) => {
       const email = req.query.email;
       console.log(req.headers.authorization)
-      // const decodedEmail = req.decoded.email;
-      // if (email !== decodedEmail) {
-      //   return res
-      //     .status(403)
-      //     .send({ message: "Forbidden Access from if " });
-      // }
       const query = { email: email };
       const bookings = await wishlistCollection.find(query).toArray();
       res.send(bookings);
