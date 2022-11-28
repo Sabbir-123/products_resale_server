@@ -96,7 +96,6 @@ async function run() {
     app.post("/advertise",  async (req, res) => {
       const mobiles = req.body;
       const id = mobiles._id;
-      console.log(mobiles)
       const query = {
         _id: ObjectId(id),
         stock:  mobiles.stock,
@@ -129,12 +128,15 @@ async function run() {
 
     app.post("/wishlist",  async (req, res) => {
       const mobiles = req.body;
+      const id = mobiles._id;
+      
       const query = {
-        stock:  mobiles.stock,
+        _id: new ObjectId(id),
         email: mobiles.email }
+        console.log(mobiles, id, query)
       const available = await wishlistCollection.find(query).toArray();
       if (available.length) {
-        const message = `You already have a advertised for this item `;
+        const message = `You already have wishlisted this item `;
         return res.send({ acknowledged: false, message });
       }
       console.log(available)
@@ -142,12 +144,22 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/wishlist', async(req, res)=>{
-      const query= {};
-      const mobile= await wishlistCollection.find(query).toArray();
-      res.send(mobile)
+    app.get("/wishlist", async (req, res) => {
+      const email = req.query.email;
+      console.log(req.headers.authorization)
+      // const decodedEmail = req.decoded.email;
+      // if (email !== decodedEmail) {
+      //   return res
+      //     .status(403)
+      //     .send({ message: "Forbidden Access from if " });
+      // }
+      const query = { email: email };
+      const bookings = await wishlistCollection.find(query).toArray();
+      res.send(bookings);
+    });
 
-    })
+
+    
     // app.get("/mobilesbycategory", async (req, res) => {
     //   const query = {};
     //   const cursor = await mobileCollection.find(query).toArray();
