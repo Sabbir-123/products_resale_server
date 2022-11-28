@@ -5,6 +5,10 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const { query } = require('express')
 require('dotenv').config()
 
+const stripe = require("stripe")(
+  "sk_test_51M6sYaKYI0bXqZMZ8e4PvkyO3yhSO7xpFAVe8SikQYVWx7mQSrSwK6NjX31oYM5KtQolvbpUJswiIqMHYaw9OISM00oIByheME"
+);
+
 const app = express()
 const port = process.env.PORT || 8000
 
@@ -46,6 +50,7 @@ async function run() {
     const sellersCollection = client.db("usedmobile").collection("sellers");
     const paymentsCollection = client.db("usedmobile").collection("payments");
     const questionsCollection = client.db("usedmobile").collection("questions");
+    const reposrtCollection = client.db("usedmobile").collection("reports");
    
 
     // const verifyAdmin = async (req, res, next) => {
@@ -313,6 +318,24 @@ async function run() {
       res.send(usersall)
 
     })
+
+
+    app.post("/report", async (req, res) => {
+      const booking = req.body;
+      const query = {
+        bookingId: booking.bookingId,
+        email: booking.email,
+      };
+      const bookedAlready = await reposrtCollection.find(query).toArray();
+      if (bookedAlready.length) {
+        const message = `You already have a report for ${booking.MobileName} `;
+        return res.send({ acknowledged: false, message });
+      }
+      const result = await bookingsCollection.insertOne(booking);
+      res.send(result);
+    });
+
+
 
    
   
