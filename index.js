@@ -332,7 +332,12 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/reports', async(req, res)=>{
+      const query = {};
+      const users = await reposrtCollection.find(query).toArray();
+      res.send(users)
 
+    })
    
   
   } finally {
