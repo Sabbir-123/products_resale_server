@@ -17,8 +17,9 @@ app.use(cors())
 app.use(express.json())
 
 // Database Connection
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}e@cluster0.j4x9j8z.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.j4x9j8z.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
 
 
 
@@ -313,22 +314,23 @@ async function run() {
 
     })
 
-
-    app.post("/report", async (req, res) => {
-      const booking = req.body;
+    app.post("/report",  async (req, res) => {
+      const mobiles = req.body;
+      const id = mobiles._id;
+      
       const query = {
-        bookingId: booking.bookingId,
-        email: booking.email,
-      };
-      const bookedAlready = await reposrtCollection.find(query).toArray();
-      if (bookedAlready.length) {
-        const message = `You already have a report for ${booking.MobileName} `;
+        _id: new ObjectId(id),
+   }
+        console.log(mobiles, id, query)
+      const available = await reposrtCollection.find(query).toArray();
+      if (available.length) {
+        const message = `You already have wishlisted this item `;
         return res.send({ acknowledged: false, message });
       }
-      const result = await bookingsCollection.insertOne(booking);
+      console.log(available)
+      const result = await reposrtCollection.insertOne(mobiles);
       res.send(result);
     });
-
 
 
    
