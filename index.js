@@ -45,6 +45,7 @@ async function run() {
     const usersCollection = client.db("usedmobile").collection("users");
     const sellersCollection = client.db("usedmobile").collection("sellers");
     const paymentsCollection = client.db("usedmobile").collection("payments");
+    const questionsCollection = client.db("usedmobile").collection("questions");
    
 
     // const verifyAdmin = async (req, res, next) => {
@@ -159,12 +160,12 @@ async function run() {
     });
 
 
-    
-    // app.get("/mobilesbycategory", async (req, res) => {
-    //   const query = {};
-    //   const cursor = await mobileCollection.find(query).toArray();
-    //   res.send(cursor);
-    // });
+    app.get("/wishlist/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const booking = await bookingsCollection.findOne(query);
+      res.send(booking);
+    });
 
 
 // Bookings
@@ -195,6 +196,14 @@ async function run() {
       }
       const result = await bookingsCollection.insertOne(booking);
       res.send(result);
+    });
+
+
+    app.get("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const booking = await bookingsCollection.findOne(query);
+      res.send(booking);
     });
 
 
@@ -241,15 +250,24 @@ async function run() {
       const users = await usersCollection.find(query).toArray();
       res.send(users)
 
-      app.delete("/users/:id", async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: ObjectId(id) };
-        const result = await usersCollection.deleteOne(query);
-        res.send(result);
-      });
     })
+
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
+    });
     
-    
+
+    app.get('/blogs', async(req, res)=>{
+      const query = {};
+      const users = await questionsCollection.find(query).toArray();
+      res.send(users)
+
+    })
+   
   
   } finally {
   }
