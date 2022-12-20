@@ -17,7 +17,7 @@ app.use(cors())
 app.use(express.json())
 
 // Database Connection
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.j4x9j8z.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://kenabacha:lAKsFvO61icXeVQe@cluster0.j4x9j8z.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
@@ -53,18 +53,12 @@ async function run() {
     const questionsCollection = client.db("usedmobile").collection("questions");
     const reposrtCollection = client.db("usedmobile").collection("reports");
    
-
-    // const verifyAdmin = async (req, res, next) => {
-    //   console.log("inside verify", req.decoded.email);
-    //   const decodedEmail = req.decoded.email;
-    //   const query = { email: decodedEmail };
-    //   const user = await usersCollection.findOne(query);
-    //   if (user?.role !== "admin") {
-    //     return res.status(403).send({ message: "Forbidden Access" });
-    //   }
-    //   next();
-    // };
-
+    app.get("/categorymobiles", async (req, res) => {
+      const id= req.params.id;
+      const query = {};
+      const cursor = await categoryCollection.find(query).toArray();
+      res.send(cursor);
+    });
 
     app.get("/mobiles", async (req, res) => {
       const id= req.params.id;
@@ -94,7 +88,7 @@ async function run() {
       res.send(bookings)
     });
 
-    app.post("/mobiles", verifyJWT,  async (req, res) => {
+    app.post("/mobiles", async (req, res) => {
       const mobiles = req.body;
       const result = await categoryCollection.insertOne(mobiles);
       res.send(result);
